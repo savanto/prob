@@ -1,8 +1,7 @@
-/*
+/* PROBLEM
  * Problem PROBLEM
  *
- * PROBLEM
- *
+ * 
  */
 
 #include <stdio.h>
