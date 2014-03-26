@@ -16,14 +16,14 @@
  * right and down.
  */
 
-#include <stdlib.h>
 #include <stdio.h>
 
 #define N 80
-#define F 1000000
 #define INFILE "081.txt"
 
 int main() {
+  int i, j, k;
+
   // Test matrix from example
 /*
   int square[N][N] = { { 131, 673, 234, 103,  18 },
@@ -35,7 +35,6 @@ int main() {
 
   // Read real matrix in from file
   int square[N][N];
-  int i, j, k;
   char num[10], c;
   FILE* file = fopen(INFILE, "r");
   for (i = 0; i < N; ++i) {
@@ -52,19 +51,31 @@ int main() {
     }
   }
 
-  // Convert square matrix into triangular
-  unsigned long long triangle[N*2-1][N*2-1];
-  for (i = 0; i < N*2-1; ++i)
-    for (j = 0; j <= i; ++j)
-      triangle[i][j] = (i - j >= N || j >= N ? F : square[i-j][j]);
+  // Algorithm based on RudyPenteado's posted in the forum for problem 081.
+  // 1. Go to SE corner
+  // 2. Work vertically up accumulating values. Return.
+  // 3. Work horizontally left accumulating values. Return.
+  // 4. Move NW one step.
+  // 5. Work vertically up adding min(E, S). Return.
+  // 6. Work horizontally left adding min(E, S). Return.
+  // 7. Repeat 4-6 until at NW corner.
+  for (i = N-1, k = N-2; k >= 0; --k) {
+    square[k][i] += square[k+1][i];
+    square[i][k] += square[i][k+1];
+  }
 
-  // Starting on penultimate row, calculate smallest path.
-  for (i = N*2-3; i >= 0; --i)
-    for (j = 0; j <= i; ++j)
-      triangle[i][j] += triangle[i+1][j] < triangle[i+1][j+1] ?
-        triangle[i+1][j] : triangle[i+1][j+1];
+  for (i = N-2; i >= 0; --i) {
+    square[i][i] += (square[i][i+1] < square[i+1][i] ? square[i][i+1] :
+                                                       square[i+1][i]);
+    for (k = i-1; k >= 0; --k) {
+      square[k][i] += (square[k][i+1] < square[k+1][i] ? square[k][i+1] :
+                                                         square[k+1][i]);
+      square[i][k] += (square[i+1][k] < square[i][k+1] ? square[i+1][k] :
+                                                         square[i][k+1]);
+    }
+ }
 
-  printf("Smallest 2-way path sum: %llu\n", triangle[0][0]);
+  printf("Smallest 2-way path sum: %llu\n", square[0][0]);
 
   fclose(file);
   return 0;
